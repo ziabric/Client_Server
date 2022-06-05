@@ -1,10 +1,6 @@
 const express = require('express')
 const bodyParser = require("body-parser")
-const sqlite3 = require('sqlite3').verbose();
 const server = express()
-
-//открываем бд
-const db = new sqlite3.Database('cs.sqlite3')
 
 
 
@@ -14,27 +10,55 @@ server.use(bodyParser.urlencoded({ extended: false }));
 
 const PORT = 3000
 
+const fs = require('fs');
+const { title } = require('process');
+
+
 //прослушка порта 
 server.listen(PORT, ()=>
 {
-  console.log('\n')
+  console.log('Start!!!')
 })
-
-
 
 
 //обработка GET запросов 
 server.get('/', (req,res)=>
 {
-  
+  fs.readFile('db.json', 'utf8', function (err, data) 
+  {
+    const obj = JSON.parse(data);
+
+    const id = Math.trunc(Math.random()*(obj.count))
+
+    const text = obj.text[id]
+
+    res.send({"text": text, "id": id});
+
+    //res.send(String(req.method))
+
+  });
 })
 
 
 //обработка POST запросов
 server.post('/', (req,res)=>
 {
-  res.send("echo post")
-})
 
-//закрываем бд
-db.close()
+  fs.readFile('db.json', 'utf8', function (err, data) 
+  {
+    const obj = JSON.parse(data);
+
+
+    
+    if (String(req.body.answer) == obj.answer[Number(req.body.id)]) 
+    {
+      res.send("True" + req.body.answer + obj.answer[Number(req.body.id)])
+    }
+    else 
+    {
+      res.send("False --" + String(req.body.answer) + "--" +String(obj.answer[req.body.id]))
+    }
+    
+  });
+  
+})
